@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRUNK - Unleash The Bold</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'bebas': ['Bebas Neue', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                        'orbitron': ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        drunk: {
+                            blue: '#004B93',
+                            dark: '#002855',
+                            red: '#C9002B',
+                            white: '#FFFFFF',
+                            silver: '#C0C0C0',
+                            black: '#0A0A0A',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+                        'spin-slow': 'spin 20s linear infinite',
+                        'bounce-slow': 'bounce 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'pulse-glow': {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(0, 75, 147, 0.5)' },
+                            '50%': { boxShadow: '0 0 40px rgba(0, 75, 147, 0.8)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #0A0A0A; overflow-x: hidden; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0A0A0A; }
+        ::-webkit-scrollbar-thumb { background: #004B93; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #C9002B; }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #004B93 0%, #C9002B 50%, #004B93 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .neon-blue {
+            text-shadow: 0 0 10px rgba(0, 75, 147, 0.8), 0 0 20px rgba(0, 75, 147, 0.5), 0 0 30px rgba(0, 75, 147, 0.3);
+        }
+
+        .neon-red {
+            text-shadow: 0 0 10px rgba(201, 0, 43, 0.8), 0 0 20px rgba(201, 0, 43, 0.5), 0 0 30px rgba(201, 0, 43, 0.3);
+        }
+
+        .liquid-fill {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .liquid-fill::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 0%;
+            background: linear-gradient(180deg, #004B93, #C9002B);
+            transition: height 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: -1;
+        }
+        .liquid-fill:hover::before { height: 100%; }
+
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+        .glitch::before {
+            animation: glitch-1 0.3s infinite linear alternate-reverse;
+            color: #004B93;
+            z-index: -1;
+        }
+        .glitch::after {
+            animation: glitch-2 0.3s infinite linear alternate-reverse;
+            color: #C9002B;
+            z-index: -2;
+        }
+        @keyframes glitch-1 {
+            0% { clip-path: inset(20% 0 60% 0); transform: translate(-2px, 0); }
+            100% { clip-path: inset(50% 0 30% 0); transform: translate(2px, 0); }
+        }
+        @keyframes glitch-2 {
+            0% { clip-path: inset(60% 0 20% 0); transform: translate(2px, 0); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(-2px, 0); }
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 20px; height: 20px;
+            border: 2px solid #004B93;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+            mix-blend-mode: difference;
+        }
+        .cursor-follower.hover {
+            width: 50px; height: 50px;
+            background: rgba(0, 75, 147, 0.2);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-children > * {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        .stagger-children.active > *:nth-child(1) { animation: slideUp 0.6s 0.1s forwards; }
+        .stagger-children.active > *:nth-child(2) { animation: slideUp 0.6s 0.2s forwards; }
+        .stagger-children.active > *:nth-child(3) { animation: slideUp 0.6s 0.3s forwards; }
+        .stagger-children.active > *:nth-child(4) { animation: slideUp 0.6s 0.4s forwards; }
+        .stagger-children.active > *:nth-child(5) { animation: slideUp 0.6s 0.5s forwards; }
+        .stagger-children.active > *:nth-child(6) { animation: slideUp 0.6s 0.6s forwards; }
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .product-card {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 75, 147, 0.3);
+        }
+
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        #loader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0A0A0A;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        #loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-bar {
+            width: 200px;
+            height: 3px;
+            background: #1a1a1a;
+            margin-top: 20px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #004B93, #C9002B);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 2px;
+            background: #C9002B;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .nav-link:hover::after {
+            transform: translateX(0);
+        }
+
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease;
+        }
+
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s infinite;
+            color: #C9002B;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .horizontal-scroll {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .horizontal-scroll::-webkit-scrollbar { display: none; }
+        .horizontal-scroll > * {
+            scroll-snap-align: center;
+            flex-shrink: 0;
+        }
+
+        .spotlight {
+            position: relative;
+            overflow: hidden;
+        }
+        .spotlight::before {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(0, 75, 147, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .spotlight:hover::before {
+            opacity: 1;
+        }
+
+        .magnetic-btn {
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .count-up {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .wave {
+            animation: wave 2s ease-in-out infinite;
+        }
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    
+        /* FAQ Animations */
+        .faq-content {
+            transition: all 0.3s ease;
+        }
+
+        /* Partner Marquee */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+
+        /* Line clamp for blog */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Smooth image loading */
+        img {
+            opacity: 1;
+            transition: opacity 0.6s ease;
+        }
+
+        /* Enhanced glass hover */
+        .glass:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Text selection color */
+        ::selection {
+            background: rgba(201, 0, 43, 0.3);
+            color: white;
+        }
+
+        /* Focus styles */
+        input:focus, textarea:focus, select:focus {
+            box-shadow: 0 0 0 2px rgba(201, 0, 43, 0.3);
+        }
+
+        /* Smooth scrollbar for horizontal scroll */
+        .horizontal-scroll {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        /* Video background */
+        video {
+            object-fit: cover;
+        }
+
+        /* Prevent text selection on interactive elements */
+        button, .magnetic-btn, .liquid-fill {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Enhanced hover states */
+        .product-card {
+            will-change: transform;
+        }
+
+        /* Loading state for buttons */
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+</style>
+<base target="_blank">
+</head>
+<body class="bg-drunk-black text-white">
+
+    <!-- Custom Cursor -->
+    <div class="cursor-follower hidden md:block" id="cursor"></div>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <h1 class="font-bebas text-6xl md:text-8xl text-gradient tracking-wider">DRUNK</h1>
+        <div class="loader-bar">
+            <div class="loader-progress" id="loader-progress"></div>
+        </div>
+        <p class="mt-4 font-inter text-sm text-gray-500 tracking-widest uppercase">Loading Experience</p>
+    </div>
+
+    <!-- Particle Canvas Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500">
+        <div class="glass-dark">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <a href="#hero" class="font-bebas text-3xl tracking-widest text-white hover:text-drunk-red transition-colors">
+                    DRUNK<span class="text-drunk-red">.</span>
+                </a>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#about" class="nav-link font-inter text-sm tracking-widest uppercase text-gray-300 hover:text-white transition-colors py-2">About</a>
+                    <a href="#products" class="nav-link font-inter text-sm tracking-widest uppercase text-gray-300 hover:text-white transition-colors py-2">Products</a>
+                    <a href="#experience" class="nav-link font-inter text-sm tracking-widest uppercase text-gray-300 hover:text-white transition-colors py-2">Experience</a>
+                    <a href="#flavors" class="nav-link font-inter text-sm tracking-widest uppercase text-gray-300 hover:text-white transition-colors py-2">Flavors</a>
+                    <a href="#contact" class="nav-link font-inter text-sm tracking-widest uppercase text-gray-300 hover:text-white transition-colors py-2">Contact</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button class="hidden md:block liquid-fill px-6 py-2 border border-drunk-red text-drunk-red font-inter text-sm tracking-widest uppercase hover:text-white transition-colors">
+                        Shop Now
+                    </button>
+                    <button id="menu-toggle" class="md:hidden text-white">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 bg-drunk-black/95 backdrop-blur-xl transform translate-x-full transition-transform duration-500">
+        <div class="flex flex-col items-center justify-center h-full space-y-8">
+            <a href="#about" class="mobile-link font-bebas text-4xl text-white hover:text-drunk-red transition-colors">ABOUT</a>
+            <a href="#products" class="mobile-link font-bebas text-4xl text-white hover:text-drunk-red transition-colors">PRODUCTS</a>
+            <a href="#experience" class="mobile-link font-bebas text-4xl text-white hover:text-drunk-red transition-colors">EXPERIENCE</a>
+            <a href="#flavors" class="mobile-link font-bebas text-4xl text-white hover:text-drunk-red transition-colors">FLAVORS</a>
+            <a href="#contact" class="mobile-link font-bebas text-4xl text-white hover:text-drunk-red transition-colors">CONTACT</a>
+            <button id="menu-close" class="absolute top-6 right-6 text-white">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-drunk-dark/50 via-transparent to-drunk-black z-10"></div>
+
+        <div class="relative z-20 text-center px-6 max-w-6xl mx-auto">
+            <div class="reveal">
+                <p class="font-inter text-sm md:text-base tracking-[0.3em] uppercase text-drunk-red mb-6">Est. 2024 &bull; Premium Beverage</p>
+            </div>
+
+            <h1 class="reveal font-bebas text-8xl md:text-[12rem] lg:text-[16rem] leading-none tracking-wider text-white mb-4 glitch" data-text="DRUNK">
+                DRUNK
+            </h1>
+
+            <div class="reveal">
+                <p class="font-orbitron text-lg md:text-2xl text-gray-400 mb-2 typing-cursor" id="typing-text"></p>
+            </div>
+
+            <div class="reveal mt-12 flex flex-col md:flex-row items-center justify-center gap-6">
+                <a href="#products" class="magnetic-btn group relative px-10 py-4 bg-drunk-red text-white font-inter font-semibold tracking-widest uppercase overflow-hidden">
+                    <span class="relative z-10">Explore Collection</span>
+                    <div class="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
+                    <span class="absolute inset-0 flex items-center justify-center text-drunk-red font-inter font-semibold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20">Explore Collection</span>
+                </a>
+                <a href="#experience" class="magnetic-btn px-10 py-4 border border-white/30 text-white font-inter font-semibold tracking-widest uppercase hover:bg-white hover:text-drunk-black transition-all duration-300">
+                    Watch Film
+                </a>
+            </div>
+        </div>
+
+        <!-- Floating Elements -->
+        <div class="absolute top-1/4 left-10 w-20 h-20 border border-drunk-blue/30 rounded-full animate-float hidden lg:block"></div>
+        <div class="absolute bottom-1/4 right-10 w-32 h-32 border border-drunk-red/20 rounded-full animate-float hidden lg:block" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/3 right-1/4 w-4 h-4 bg-drunk-red rounded-full animate-pulse-glow hidden lg:block"></div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 animate-bounce-slow">
+            <div class="flex flex-col items-center space-y-2">
+                <span class="font-inter text-xs tracking-widest uppercase text-gray-500">Scroll</span>
+                <i data-lucide="chevron-down" class="w-5 h-5 text-drunk-red"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Marquee Section -->
+    <div class="py-8 border-y border-white/10 overflow-hidden">
+        <div class="marquee-container">
+            <div class="marquee-content font-bebas text-6xl md:text-8xl text-white/10 tracking-wider">
+                UNLEASH THE BOLD &bull; TASTE THE REVOLUTION &bull; DRUNK BY NATURE &bull; UNLEASH THE BOLD &bull; TASTE THE REVOLUTION &bull; DRUNK BY NATURE &bull; UNLEASH THE BOLD &bull; TASTE THE REVOLUTION &bull; DRUNK BY NATURE &bull;
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="relative py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Our Story</p>
+                    <h2 class="font-bebas text-5xl md:text-7xl text-white mb-8 leading-tight">
+                        BORN TO<br><span class="text-gradient">BREAK RULES</span>
+                    </h2>
+                    <p class="font-inter text-gray-400 text-lg leading-relaxed mb-6">
+                        DRUNK is not just a beverage&mdash;it is a statement. Crafted for those who refuse to blend in, 
+                        our premium drinks combine bold flavors with an unapologetic attitude. Every sip is a 
+                        rebellion against the ordinary.
+                    </p>
+                    <p class="font-inter text-gray-400 text-lg leading-relaxed mb-8">
+                        From the streets of urban culture to the heights of luxury, DRUNK transcends boundaries. 
+                        We do not follow trends&mdash;we set them. Welcome to the revolution in a can.
+                    </p>
+
+                    <div class="grid grid-cols-3 gap-8">
+                        <div class="text-center">
+                            <span class="font-bebas text-4xl text-drunk-red count-up" data-target="50">0</span>
+                            <span class="font-bebas text-4xl text-drunk-red">+</span>
+                            <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Countries</p>
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bebas text-4xl text-drunk-blue count-up" data-target="12">0</span>
+                            <span class="font-bebas text-4xl text-drunk-blue">M</span>
+                            <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Fans</p>
+                        </div>
+                        <div class="text-center">
+                            <span class="font-bebas text-4xl text-white count-up" data-target="24">0</span>
+                            <span class="font-bebas text-4xl text-white">/7</span>
+                            <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Energy</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reveal relative">
+                    <div class="relative aspect-square rounded-2xl overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-drunk-blue/20 to-drunk-red/20 z-10"></div>
+                        <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&q=80" 
+                             alt="DRUNK Can" 
+                             class="w-full h-full object-cover transform hover:scale-110 transition-transform duration-700">
+                    </div>
+                    <div class="absolute -top-6 -right-6 w-24 h-24 border-2 border-drunk-red/30 rounded-full animate-spin-slow"></div>
+                    <div class="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-drunk-blue/20 rounded-full animate-spin-slow" style="animation-direction: reverse;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="relative py-32 px-6 bg-gradient-to-b from-drunk-black to-drunk-dark">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 reveal">
+                <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Collection</p>
+                <h2 class="font-bebas text-6xl md:text-8xl text-white mb-6">THE LINEUP</h2>
+                <p class="font-inter text-gray-400 max-w-2xl mx-auto">Choose your weapon. Each variant is engineered for maximum impact and unforgettable taste.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children" id="products-grid">
+                <!-- Product 1 -->
+                <div class="product-card glass rounded-2xl p-8 relative overflow-hidden group spotlight">
+                    <div class="absolute top-4 right-4">
+                        <span class="font-inter text-xs bg-drunk-red text-white px-3 py-1 rounded-full">BESTSELLER</span>
+                    </div>
+                    <div class="aspect-square mb-6 relative">
+                        <img src="https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=500&q=80" 
+                             alt="DRUNK Original" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    </div>
+                    <h3 class="font-bebas text-3xl text-white mb-2">ORIGINAL</h3>
+                    <p class="font-inter text-gray-400 text-sm mb-4">The classic that started it all. Bold, unapologetic, unforgettable.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-orbitron text-2xl text-drunk-red">$3.99</span>
+                        <button class="liquid-fill px-6 py-2 border border-drunk-blue text-drunk-blue font-inter text-sm uppercase hover:text-white transition-colors">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card glass rounded-2xl p-8 relative overflow-hidden group spotlight">
+                    <div class="absolute top-4 right-4">
+                        <span class="font-inter text-xs bg-drunk-blue text-white px-3 py-1 rounded-full">NEW</span>
+                    </div>
+                    <div class="aspect-square mb-6 relative">
+                        <img src="https://images.unsplash.com/photo-1625772299853-4c63e7e1f5f2?w=500&q=80" 
+                             alt="DRUNK Zero" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    </div>
+                    <h3 class="font-bebas text-3xl text-white mb-2">ZERO SUGAR</h3>
+                    <p class="font-inter text-gray-400 text-sm mb-4">All the attitude, zero compromise. Maximum flavor, zero sugar.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-orbitron text-2xl text-drunk-red">$3.99</span>
+                        <button class="liquid-fill px-6 py-2 border border-drunk-blue text-drunk-blue font-inter text-sm uppercase hover:text-white transition-colors">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="product-card glass rounded-2xl p-8 relative overflow-hidden group spotlight">
+                    <div class="aspect-square mb-6 relative">
+                        <img src="https://images.unsplash.com/photo-1543255006-d6395b6f1171?w=500&q=80" 
+                             alt="DRUNK Cherry" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    </div>
+                    <h3 class="font-bebas text-3xl text-white mb-2">CHERRY BOMB</h3>
+                    <p class="font-inter text-gray-400 text-sm mb-4">An explosion of cherry flavor that detonates on your taste buds.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-orbitron text-2xl text-drunk-red">$4.49</span>
+                        <button class="liquid-fill px-6 py-2 border border-drunk-blue text-drunk-blue font-inter text-sm uppercase hover:text-white transition-colors">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 4 -->
+                <div class="product-card glass rounded-2xl p-8 relative overflow-hidden group spotlight">
+                    <div class="aspect-square mb-6 relative">
+                        <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80" 
+                             alt="DRUNK Mango" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    </div>
+                    <h3 class="font-bebas text-3xl text-white mb-2">TROPICAL STORM</h3>
+                    <p class="font-inter text-gray-400 text-sm mb-4">A hurricane of tropical flavors that sweeps you off your feet.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-orbitron text-2xl text-drunk-red">$4.49</span>
+                        <button class="liquid-fill px-6 py-2 border border-drunk-blue text-drunk-blue font-inter text-sm uppercase hover:text-white transition-colors">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 5 -->
+                <div class="product-card glass rounded-2xl p-8 relative overflow-hidden group spotlight">
+                    <div class="absolute top-4 right-4">
+                        <span class="font-inter text-xs bg-drunk-red text-white px-3 py-1 rounded-full">LIMITED</span>
+                    </div>
+                    <div class="aspect-square mb-6 relative">
+                        <img src="https://images.unsplash.com/photo-1625772452859-1c03d5bf1137?w=500&q=80" 
+                             alt="DRUNK Energy" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                    </div>
+                    <h3 class="font-bebas text-3xl text-white mb-2">MAX ENERGY</h3>
+                    <p class="font-inter text-gray-400 text-sm mb-4">200mg caffeine. Zero limits. For the ones who never stop.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-orbitron text-2xl text-drunk-red">$4.99</span>
+                        <button class="liquid-fill px-6 py-2 border border-drunk-blue text-drunk-blue font-inter text-sm uppercase hover:text-white transition-colors">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 6 -->
+                <div class="product-card glass rounded-2xl p-8 relative overflow-hidden group spotlight">
+                    <div class="aspect-square mb-6 relative">
+                        <img src="https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=500&q=80" 
+                             alt="DRUNK Berry" 
+                             class="w-full h-full object-contain transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 filter hue-rotate-90">
+                    </div>
+                    <h3 class="font-bebas text-3xl text-white mb-2">BERRY BLAST</h3>
+                    <p class="font-inter text-gray-400 text-sm mb-4">A berry explosion that is as wild as your weekends.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="font-orbitron text-2xl text-drunk-red">$4.49</span>
+                        <button class="liquid-fill px-6 py-2 border border-drunk-blue text-drunk-blue font-inter text-sm uppercase hover:text-white transition-colors">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="relative py-32 px-6 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-drunk-blue/10 to-drunk-red/10"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="text-center mb-20 reveal">
+                <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">The Vibe</p>
+                <h2 class="font-bebas text-6xl md:text-8xl text-white mb-6">EXPERIENCE</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children" id="experience-grid">
+                <div class="tilt-card glass rounded-2xl p-8 text-center group hover:bg-drunk-blue/20 transition-all duration-500">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-drunk-red/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="zap" class="w-8 h-8 text-drunk-red"></i>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">INSTANT RUSH</h3>
+                    <p class="font-inter text-gray-400 text-sm">Feel the surge from the first sip. Engineered for immediate impact.</p>
+                </div>
+
+                <div class="tilt-card glass rounded-2xl p-8 text-center group hover:bg-drunk-blue/20 transition-all duration-500">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-drunk-blue/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="flame" class="w-8 h-8 text-drunk-blue"></i>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">BOLD FLAVOR</h3>
+                    <p class="font-inter text-gray-400 text-sm">Intense taste that does not hold back. For the bold, by the bold.</p>
+                </div>
+
+                <div class="tilt-card glass rounded-2xl p-8 text-center group hover:bg-drunk-blue/20 transition-all duration-500">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-drunk-red/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="battery-charging" class="w-8 h-8 text-drunk-red"></i>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">ALL DAY POWER</h3>
+                    <p class="font-inter text-gray-400 text-sm">Sustained energy that keeps you going from dusk till dawn.</p>
+                </div>
+
+                <div class="tilt-card glass rounded-2xl p-8 text-center group hover:bg-drunk-blue/20 transition-all duration-500">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-drunk-blue/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="crown" class="w-8 h-8 text-drunk-blue"></i>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">PREMIUM QUALITY</h3>
+                    <p class="font-inter text-gray-400 text-sm">Crafted with the finest ingredients. No compromises, ever.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Flavors Section with Horizontal Scroll -->
+    <section id="flavors" class="relative py-32 px-6 bg-drunk-dark">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal">
+                <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Taste Lab</p>
+                <h2 class="font-bebas text-6xl md:text-8xl text-white mb-6">FLAVOR MATRIX</h2>
+            </div>
+
+            <div class="horizontal-scroll gap-6 pb-8" id="flavor-scroll">
+                <div class="w-80 flex-shrink-0 glass rounded-2xl overflow-hidden group">
+                    <div class="h-64 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500&q=80" 
+                             alt="Citrus" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-drunk-black to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-blue text-white px-3 py-1 rounded-full">CLASSIC</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bebas text-3xl text-white mb-2">CITRUS PUNCH</h3>
+                        <p class="font-inter text-gray-400 text-sm mb-4">Sharp citrus notes with a kick that wakes up every sense.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                            </div>
+                            <span class="font-inter text-xs text-gray-500">INTENSITY</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-80 flex-shrink-0 glass rounded-2xl overflow-hidden group">
+                    <div class="h-64 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1536591375315-196000ea3646?w=500&q=80" 
+                             alt="Berry" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-drunk-black to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-red text-white px-3 py-1 rounded-full">TRENDING</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bebas text-3xl text-white mb-2">WILD BERRY</h3>
+                        <p class="font-inter text-gray-400 text-sm mb-4">A berry medley that is unpredictable and dangerously delicious.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                            </div>
+                            <span class="font-inter text-xs text-gray-500">INTENSITY</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-80 flex-shrink-0 glass rounded-2xl overflow-hidden group">
+                    <div class="h-64 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=500&q=80" 
+                             alt="Tropical" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-drunk-black to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-blue text-white px-3 py-1 rounded-full">SUMMER</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bebas text-3xl text-white mb-2">TROPICAL HEAT</h3>
+                        <p class="font-inter text-gray-400 text-sm mb-4">Island vibes with a fiery finish. Paradise in every drop.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                            </div>
+                            <span class="font-inter text-xs text-gray-500">INTENSITY</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-80 flex-shrink-0 glass rounded-2xl overflow-hidden group">
+                    <div class="h-64 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500&q=80" 
+                             alt="Cola" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-drunk-black to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-red text-white px-3 py-1 rounded-full">LEGEND</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bebas text-3xl text-white mb-2">DARK COLA</h3>
+                        <p class="font-inter text-gray-400 text-sm mb-4">The classic reinvented. Darker, bolder, unmistakably DRUNK.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                            </div>
+                            <span class="font-inter text-xs text-gray-500">INTENSITY</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-80 flex-shrink-0 glass rounded-2xl overflow-hidden group">
+                    <div class="h-64 relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80" 
+                             alt="Ginger" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-drunk-black to-transparent"></div>
+                        <div class="absolute bottom-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-blue text-white px-3 py-1 rounded-full">BOLD</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bebas text-3xl text-white mb-2">GINGER FIRE</h3>
+                        <p class="font-inter text-gray-400 text-sm mb-4">Spicy ginger that burns so good. Not for the faint-hearted.</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                                <div class="w-2 h-2 bg-drunk-red rounded-full"></div>
+                            </div>
+                            <span class="font-inter text-xs text-gray-500">INTENSITY</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="relative py-24 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 stagger-children" id="stats-grid">
+                <div class="text-center p-6 glass rounded-2xl">
+                    <span class="font-bebas text-5xl md:text-6xl text-drunk-red count-up" data-target="500">0</span>
+                    <span class="font-bebas text-5xl md:text-6xl text-drunk-red">M+</span>
+                    <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Cans Sold</p>
+                </div>
+                <div class="text-center p-6 glass rounded-2xl">
+                    <span class="font-bebas text-5xl md:text-6xl text-drunk-blue count-up" data-target="150">0</span>
+                    <span class="font-bebas text-5xl md:text-6xl text-drunk-blue">+</span>
+                    <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Awards Won</p>
+                </div>
+                <div class="text-center p-6 glass rounded-2xl">
+                    <span class="font-bebas text-5xl md:text-6xl text-white count-up" data-target="98">0</span>
+                    <span class="font-bebas text-5xl md:text-6xl text-white">%</span>
+                    <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Satisfaction</p>
+                </div>
+                <div class="text-center p-6 glass rounded-2xl">
+                    <span class="font-bebas text-5xl md:text-6xl text-drunk-red count-up" data-target="24">0</span>
+                    <span class="font-bebas text-5xl md:text-6xl text-drunk-red">/7</span>
+                    <p class="font-inter text-xs text-gray-500 mt-2 uppercase tracking-wider">Production</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="relative py-32 px-6 bg-gradient-to-b from-drunk-black to-drunk-dark">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-20 reveal">
+                <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Testimonials</p>
+                <h2 class="font-bebas text-6xl md:text-8xl text-white mb-6">THE HYPE</h2>
+            </div>
+
+            <div class="relative" id="testimonial-carousel">
+                <div class="overflow-hidden">
+                    <div class="flex transition-transform duration-700" id="testimonial-track">
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="glass rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto">
+                                <i data-lucide="quote" class="w-12 h-12 text-drunk-red mx-auto mb-6 opacity-50"></i>
+                                <p class="font-inter text-xl md:text-2xl text-gray-300 leading-relaxed mb-8">
+                                    "DRUNK changed the game completely. The energy is unmatched and the flavor hits different. 
+                                    This is not just a drink&mdash;it is a lifestyle."
+                                </p>
+                                <div class="flex items-center justify-center space-x-4">
+                                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" 
+                                         alt="User" class="w-12 h-12 rounded-full object-cover">
+                                    <div class="text-left">
+                                        <p class="font-inter font-semibold text-white">Marcus Chen</p>
+                                        <p class="font-inter text-xs text-gray-500">Professional Gamer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="glass rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto">
+                                <i data-lucide="quote" class="w-12 h-12 text-drunk-red mx-auto mb-6 opacity-50"></i>
+                                <p class="font-inter text-xl md:text-2xl text-gray-300 leading-relaxed mb-8">
+                                    "I have tried every energy drink on the market. DRUNK is the only one that delivers 
+                                    consistent energy without the crash. Absolutely incredible."
+                                </p>
+                                <div class="flex items-center justify-center space-x-4">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" 
+                                         alt="User" class="w-12 h-12 rounded-full object-cover">
+                                    <div class="text-left">
+                                        <p class="font-inter font-semibold text-white">Sarah Williams</p>
+                                        <p class="font-inter text-xs text-gray-500">Fitness Coach</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="glass rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto">
+                                <i data-lucide="quote" class="w-12 h-12 text-drunk-red mx-auto mb-6 opacity-50"></i>
+                                <p class="font-inter text-xl md:text-2xl text-gray-300 leading-relaxed mb-8">
+                                    "The branding, the taste, the energy&mdash;everything about DRUNK screams premium. 
+                                    It has become a staple in my studio sessions."
+                                </p>
+                                <div class="flex items-center justify-center space-x-4">
+                                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" 
+                                         alt="User" class="w-12 h-12 rounded-full object-cover">
+                                    <div class="text-left">
+                                        <p class="font-inter font-semibold text-white">David Park</p>
+                                        <p class="font-inter text-xs text-gray-500">Music Producer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center space-x-4 mt-8">
+                    <button id="prev-testimonial" class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-drunk-red hover:border-drunk-red transition-all">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    <button id="next-testimonial" class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-drunk-red hover:border-drunk-red transition-all">
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- Video Background Section -->
+    <section class="relative py-32 px-6 overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <video autoplay muted loop playsinline class="w-full h-full object-cover opacity-30">
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-pouring-soda-into-a-glass-with-ice-28726-large.mp4" type="video/mp4">
+            </video>
+            <div class="absolute inset-0 bg-gradient-to-b from-drunk-black via-drunk-black/80 to-drunk-black"></div>
+        </div>
+
+        <div class="relative z-10 max-w-5xl mx-auto text-center reveal">
+            <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">The Process</p>
+            <h2 class="font-bebas text-6xl md:text-9xl text-white mb-8 leading-none">
+                CRAFTED WITH<br><span class="text-gradient">PRECISION</span>
+            </h2>
+            <p class="font-inter text-gray-400 text-lg max-w-2xl mx-auto mb-12">
+                Every can of DRUNK undergoes a meticulous 72-hour brewing process. 
+                We source only the finest natural ingredients from sustainable farms worldwide.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8 stagger-children" id="process-grid">
+                <div class="glass rounded-2xl p-8 text-center group hover:border-drunk-red/50 transition-all duration-500">
+                    <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-drunk-blue to-drunk-red flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span class="font-bebas text-3xl text-white">01</span>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">SOURCE</h3>
+                    <p class="font-inter text-gray-400 text-sm">Hand-picked ingredients from the world&apos;s best growing regions.</p>
+                </div>
+
+                <div class="glass rounded-2xl p-8 text-center group hover:border-drunk-red/50 transition-all duration-500">
+                    <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-drunk-red to-drunk-blue flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span class="font-bebas text-3xl text-white">02</span>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">BREW</h3>
+                    <p class="font-inter text-gray-400 text-sm">72-hour cold brew extraction for maximum flavor intensity.</p>
+                </div>
+
+                <div class="glass rounded-2xl p-8 text-center group hover:border-drunk-red/50 transition-all duration-500">
+                    <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-drunk-blue to-drunk-red flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span class="font-bebas text-3xl text-white">03</span>
+                    </div>
+                    <h3 class="font-bebas text-2xl text-white mb-3">CAN</h3>
+                    <p class="font-inter text-gray-400 text-sm">Nitrogen-sealed in our signature aluminum for ultimate freshness.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Flavor Wheel Section -->
+    <section class="relative py-32 px-6 bg-gradient-to-b from-drunk-dark to-drunk-black">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Flavor Science</p>
+                    <h2 class="font-bebas text-5xl md:text-7xl text-white mb-8">
+                        TASTE<br><span class="text-gradient">PROFILE</span>
+                    </h2>
+                    <p class="font-inter text-gray-400 text-lg leading-relaxed mb-8">
+                        Our master flavorists have engineered the perfect balance of sweetness, 
+                        acidity, and intensity. Each variant hits different notes on your palate.
+                    </p>
+
+                    <div class="space-y-4" id="flavor-bars">
+                        <div class="flavor-bar">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-inter text-sm text-white uppercase tracking-wider">Sweetness</span>
+                                <span class="font-inter text-sm text-drunk-red">85%</span>
+                            </div>
+                            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-drunk-blue to-drunk-red rounded-full" style="width: 0%; transition: width 1.5s ease-out;" data-width="85%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flavor-bar">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-inter text-sm text-white uppercase tracking-wider">Acidity</span>
+                                <span class="font-inter text-sm text-drunk-red">70%</span>
+                            </div>
+                            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-drunk-blue to-drunk-red rounded-full" style="width: 0%; transition: width 1.5s ease-out;" data-width="70%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flavor-bar">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-inter text-sm text-white uppercase tracking-wider">Intensity</span>
+                                <span class="font-inter text-sm text-drunk-red">95%</span>
+                            </div>
+                            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-drunk-blue to-drunk-red rounded-full" style="width: 0%; transition: width 1.5s ease-out;" data-width="95%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flavor-bar">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-inter text-sm text-white uppercase tracking-wider">Aftertaste</span>
+                                <span class="font-inter text-sm text-drunk-red">80%</span>
+                            </div>
+                            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-drunk-blue to-drunk-red rounded-full" style="width: 0%; transition: width 1.5s ease-out;" data-width="80%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flavor-bar">
+                            <div class="flex justify-between mb-2">
+                                <span class="font-inter text-sm text-white uppercase tracking-wider">Energy Boost</span>
+                                <span class="font-inter text-sm text-drunk-red">100%</span>
+                            </div>
+                            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-drunk-blue to-drunk-red rounded-full" style="width: 0%; transition: width 1.5s ease-out;" data-width="100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reveal relative flex items-center justify-center">
+                    <div class="relative w-80 h-80 md:w-96 md:h-96">
+                        <div class="absolute inset-0 rounded-full border-2 border-drunk-blue/20 animate-spin-slow"></div>
+                        <div class="absolute inset-4 rounded-full border-2 border-drunk-red/20 animate-spin-slow" style="animation-direction: reverse; animation-duration: 25s;"></div>
+                        <div class="absolute inset-8 rounded-full border-2 border-drunk-blue/10 animate-spin-slow" style="animation-duration: 30s;"></div>
+
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <span class="font-bebas text-6xl text-gradient">DRUNK</span>
+                                <p class="font-inter text-xs text-gray-500 mt-2 tracking-widest uppercase">Signature Blend</p>
+                            </div>
+                        </div>
+
+                        <!-- Floating flavor nodes -->
+                        <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4 glass rounded-full px-4 py-2 animate-float">
+                            <span class="font-inter text-xs text-white">Citrus</span>
+                        </div>
+                        <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-4 glass rounded-full px-4 py-2 animate-float" style="animation-delay: 0.5s;">
+                            <span class="font-inter text-xs text-white">Berry</span>
+                        </div>
+                        <div class="absolute left-0 top-1/2 transform -translate-x-4 -translate-y-1/2 glass rounded-full px-4 py-2 animate-float" style="animation-delay: 1s;">
+                            <span class="font-inter text-xs text-white">Cola</span>
+                        </div>
+                        <div class="absolute right-0 top-1/2 transform translate-x-4 -translate-y-1/2 glass rounded-full px-4 py-2 animate-float" style="animation-delay: 1.5s;">
+                            <span class="font-inter text-xs text-white">Tropical</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="relative py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-20 reveal">
+                <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">The Squad</p>
+                <h2 class="font-bebas text-6xl md:text-8xl text-white mb-6">BEHIND THE CAN</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 stagger-children" id="team-grid">
+                <div class="group relative overflow-hidden rounded-2xl">
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" 
+                         alt="CEO" class="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-drunk-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="font-bebas text-2xl text-white">ALEX RIVERA</h3>
+                        <p class="font-inter text-drunk-red text-sm uppercase tracking-wider">Founder & CEO</p>
+                        <div class="flex space-x-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-2xl">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" 
+                         alt="CMO" class="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-drunk-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="font-bebas text-2xl text-white">MAYA CHEN</h3>
+                        <p class="font-inter text-drunk-red text-sm uppercase tracking-wider">Chief Marketing</p>
+                        <div class="flex space-x-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-2xl">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80" 
+                         alt="CTO" class="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-drunk-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="font-bebas text-2xl text-white">JAMES OKONKWO</h3>
+                        <p class="font-inter text-drunk-red text-sm uppercase tracking-wider">Head of R&D</p>
+                        <div class="flex space-x-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group relative overflow-hidden rounded-2xl">
+                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80" 
+                         alt="Designer" class="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-drunk-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <h3 class="font-bebas text-2xl text-white">SOFIA MARTINEZ</h3>
+                        <p class="font-inter text-drunk-red text-sm uppercase tracking-wider">Creative Director</p>
+                        <div class="flex space-x-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                            <a href="#" class="text-white/70 hover:text-drunk-red transition-colors"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners / Logos Marquee -->
+    <section class="relative py-16 px-6 border-y border-white/10 overflow-hidden">
+        <div class="max-w-7xl mx-auto mb-12 text-center reveal">
+            <p class="font-inter text-sm tracking-[0.3em] uppercase text-gray-500">Trusted By Industry Leaders</p>
+        </div>
+
+        <div class="flex overflow-hidden">
+            <div class="flex animate-marquee space-x-16 items-center" style="animation: marquee 30s linear infinite;">
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">SPOTIFY</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">NIKE</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">RED BULL</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">ESPN</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">ADIDAS</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">PUMA</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">SONY</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">APPLE</span>
+                <!-- Duplicate for seamless loop -->
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">SPOTIFY</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">NIKE</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">RED BULL</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">ESPN</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">ADIDAS</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">PUMA</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">SONY</span>
+                <span class="font-bebas text-4xl text-white/20 whitespace-nowrap hover:text-white/40 transition-colors cursor-default">APPLE</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog / News Preview -->
+    <section class="relative py-32 px-6 bg-gradient-to-b from-drunk-black to-drunk-dark">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-16 reveal">
+                <div>
+                    <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Latest</p>
+                    <h2 class="font-bebas text-6xl md:text-7xl text-white">DRUNK DIGEST</h2>
+                </div>
+                <a href="#" class="hidden md:flex items-center space-x-2 font-inter text-sm text-drunk-red hover:text-white transition-colors group">
+                    <span>View All</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"></i>
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 stagger-children" id="blog-grid">
+                <article class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl mb-6">
+                        <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&q=80" 
+                             alt="Blog 1" class="w-full aspect-video object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute top-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-red text-white px-3 py-1 rounded-full">NEWS</span>
+                        </div>
+                    </div>
+                    <p class="font-inter text-xs text-gray-500 mb-2">May 15, 2024</p>
+                    <h3 class="font-bebas text-2xl text-white mb-3 group-hover:text-drunk-red transition-colors">DRUNK LAUNCHES IN 12 NEW COUNTRIES</h3>
+                    <p class="font-inter text-gray-400 text-sm line-clamp-2">The global expansion continues as DRUNK enters markets across Europe and Asia, bringing bold energy to millions of new fans.</p>
+                </article>
+
+                <article class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl mb-6">
+                        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80" 
+                             alt="Blog 2" class="w-full aspect-video object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute top-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-blue text-white px-3 py-1 rounded-full">CULTURE</span>
+                        </div>
+                    </div>
+                    <p class="font-inter text-xs text-gray-500 mb-2">May 10, 2024</p>
+                    <h3 class="font-bebas text-2xl text-white mb-3 group-hover:text-drunk-red transition-colors">THE SCIENCE BEHIND MAX ENERGY</h3>
+                    <p class="font-inter text-gray-400 text-sm line-clamp-2">Our R&D team breaks down the 200mg caffeine formula and why it delivers sustained energy without the dreaded crash.</p>
+                </article>
+
+                <article class="group cursor-pointer">
+                    <div class="relative overflow-hidden rounded-2xl mb-6">
+                        <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=600&q=80" 
+                             alt="Blog 3" class="w-full aspect-video object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute top-4 left-4">
+                            <span class="font-inter text-xs bg-drunk-red text-white px-3 py-1 rounded-full">EVENTS</span>
+                        </div>
+                    </div>
+                    <p class="font-inter text-xs text-gray-500 mb-2">May 5, 2024</p>
+                    <h3 class="font-bebas text-2xl text-white mb-3 group-hover:text-drunk-red transition-colors">DRUNK X EDC LAS VEGAS 2024</h3>
+                    <p class="font-inter text-gray-400 text-sm line-clamp-2">We are taking over the biggest electronic dance music festival in the world. Here is what to expect from our massive activation.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="relative py-32 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-20 reveal">
+                <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Questions</p>
+                <h2 class="font-bebas text-6xl md:text-8xl text-white mb-6">THE FAQ</h2>
+            </div>
+
+            <div class="space-y-4" id="faq-container">
+                <div class="faq-item glass rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-8 py-6 flex justify-between items-center text-left">
+                        <span class="font-inter font-semibold text-white">What makes DRUNK different from other energy drinks?</span>
+                        <i data-lucide="plus" class="w-5 h-5 text-drunk-red faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 hidden">
+                        <p class="font-inter text-gray-400 leading-relaxed">DRUNK uses a proprietary blend of natural caffeine, B-vitamins, and amino acids that provides sustained energy without the jitters or crash. Our 72-hour cold brew process extracts maximum flavor while preserving the integrity of every ingredient.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-8 py-6 flex justify-between items-center text-left">
+                        <span class="font-inter font-semibold text-white">Is DRUNK suitable for vegans?</span>
+                        <i data-lucide="plus" class="w-5 h-5 text-drunk-red faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 hidden">
+                        <p class="font-inter text-gray-400 leading-relaxed">Yes! All DRUNK products are 100% vegan-friendly. We never use any animal-derived ingredients and our manufacturing facilities are certified vegan.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-8 py-6 flex justify-between items-center text-left">
+                        <span class="font-inter font-semibold text-white">How much caffeine is in each can?</span>
+                        <i data-lucide="plus" class="w-5 h-5 text-drunk-red faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 hidden">
+                        <p class="font-inter text-gray-400 leading-relaxed">Our Original and flavored variants contain 160mg of natural caffeine per 16oz can. The MAX ENERGY variant packs 200mg for those who need maximum power. We recommend no more than 2 cans per day.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-8 py-6 flex justify-between items-center text-left">
+                        <span class="font-inter font-semibold text-white">Where can I buy DRUNK?</span>
+                        <i data-lucide="plus" class="w-5 h-5 text-drunk-red faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 hidden">
+                        <p class="font-inter text-gray-400 leading-relaxed">DRUNK is available at major retailers including Walmart, Target, 7-Eleven, and Amazon. You can also order directly from our website with free shipping on orders over $35.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item glass rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-8 py-6 flex justify-between items-center text-left">
+                        <span class="font-inter font-semibold text-white">Do you offer wholesale or bulk pricing?</span>
+                        <i data-lucide="plus" class="w-5 h-5 text-drunk-red faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 hidden">
+                        <p class="font-inter text-gray-400 leading-relaxed">Absolutely! We offer competitive wholesale pricing for gyms, offices, events, and retailers. Contact our partnerships team at wholesale@drunk.com for custom quotes and volume discounts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<!-- Contact Section -->
+    <section id="contact" class="relative py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div class="reveal">
+                    <p class="font-inter text-sm tracking-[0.3em] uppercase text-drunk-red mb-4">Get In Touch</p>
+                    <h2 class="font-bebas text-6xl md:text-8xl text-white mb-8">JOIN THE<br><span class="text-gradient">MOVEMENT</span></h2>
+                    <p class="font-inter text-gray-400 text-lg leading-relaxed mb-8">
+                        Ready to experience the revolution? Get in touch with us for partnerships, 
+                        bulk orders, or just to share your DRUNK story.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-drunk-blue/20 flex items-center justify-center">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-drunk-blue"></i>
+                            </div>
+                            <div>
+                                <p class="font-inter text-white font-semibold">Headquarters</p>
+                                <p class="font-inter text-gray-400 text-sm">123 Energy Street, New York, NY 10001</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-drunk-red/20 flex items-center justify-center">
+                                <i data-lucide="mail" class="w-5 h-5 text-drunk-red"></i>
+                            </div>
+                            <div>
+                                <p class="font-inter text-white font-semibold">Email</p>
+                                <p class="font-inter text-gray-400 text-sm">hello@drunk.com</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-drunk-blue/20 flex items-center justify-center">
+                                <i data-lucide="phone" class="w-5 h-5 text-drunk-blue"></i>
+                            </div>
+                            <div>
+                                <p class="font-inter text-white font-semibold">Phone</p>
+                                <p class="font-inter text-gray-400 text-sm">+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4 mt-8">
+                        <a href="#" class="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-drunk-red transition-colors group">
+                            <i data-lucide="instagram" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-drunk-blue transition-colors group">
+                            <i data-lucide="twitter" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-drunk-red transition-colors group">
+                            <i data-lucide="youtube" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-12 h-12 rounded-full glass flex items-center justify-center hover:bg-drunk-blue transition-colors group">
+                            <i data-lucide="music" class="w-5 h-5 group-hover:text-white transition-colors"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="reveal">
+                    <form id="contact-form" class="glass rounded-2xl p-8 md:p-12 space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="font-inter text-sm text-gray-400 uppercase tracking-wider mb-2 block">First Name</label>
+                                <input type="text" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-inter focus:outline-none focus:border-drunk-red transition-colors" placeholder="John">
+                            </div>
+                            <div>
+                                <label class="font-inter text-sm text-gray-400 uppercase tracking-wider mb-2 block">Last Name</label>
+                                <input type="text" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-inter focus:outline-none focus:border-drunk-red transition-colors" placeholder="Doe">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="font-inter text-sm text-gray-400 uppercase tracking-wider mb-2 block">Email</label>
+                            <input type="email" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-inter focus:outline-none focus:border-drunk-red transition-colors" placeholder="john@example.com">
+                        </div>
+                        <div>
+                            <label class="font-inter text-sm text-gray-400 uppercase tracking-wider mb-2 block">Subject</label>
+                            <select class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-inter focus:outline-none focus:border-drunk-red transition-colors">
+                                <option value="" class="bg-drunk-black">Select a subject</option>
+                                <option value="partnership" class="bg-drunk-black">Partnership</option>
+                                <option value="bulk" class="bg-drunk-black">Bulk Order</option>
+                                <option value="support" class="bg-drunk-black">Support</option>
+                                <option value="other" class="bg-drunk-black">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-inter text-sm text-gray-400 uppercase tracking-wider mb-2 block">Message</label>
+                            <textarea rows="4" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white font-inter focus:outline-none focus:border-drunk-red transition-colors resize-none" placeholder="Tell us your story..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full liquid-fill py-4 border border-drunk-red text-drunk-red font-inter font-semibold tracking-widest uppercase hover:text-white transition-colors">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="relative py-24 px-6 bg-gradient-to-r from-drunk-blue/20 to-drunk-red/20">
+        <div class="max-w-4xl mx-auto text-center reveal">
+            <h2 class="font-bebas text-5xl md:text-7xl text-white mb-4">STAY IN THE LOOP</h2>
+            <p class="font-inter text-gray-400 mb-8">Subscribe for exclusive drops, limited editions, and insider access.</p>
+            <form class="flex flex-col md:flex-row gap-4 max-w-xl mx-auto">
+                <input type="email" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-6 py-4 text-white font-inter focus:outline-none focus:border-drunk-red transition-colors" placeholder="Enter your email">
+                <button type="submit" class="px-8 py-4 bg-drunk-red text-white font-inter font-semibold tracking-widest uppercase hover:bg-white hover:text-drunk-black transition-all duration-300">
+                    Subscribe
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative py-16 px-6 border-t border-white/10">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div>
+                    <a href="#hero" class="font-bebas text-4xl tracking-widest text-white hover:text-drunk-red transition-colors">
+                        DRUNK<span class="text-drunk-red">.</span>
+                    </a>
+                    <p class="font-inter text-gray-500 text-sm mt-4 leading-relaxed">
+                        Unleash the bold. Taste the revolution. DRUNK by nature.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-inter font-semibold text-white uppercase tracking-wider mb-4">Products</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Original</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Zero Sugar</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Cherry Bomb</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Tropical Storm</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Max Energy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-inter font-semibold text-white uppercase tracking-wider mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#about" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">About Us</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Careers</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Press</a></li>
+                        <li><a href="#contact" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-inter font-semibold text-white uppercase tracking-wider mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="font-inter text-gray-500 text-sm hover:text-drunk-red transition-colors">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="font-inter text-gray-600 text-sm">&copy; 2024 DRUNK Beverages. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="font-inter text-gray-600 text-sm hover:text-white transition-colors">Instagram</a>
+                    <a href="#" class="font-inter text-gray-600 text-sm hover:text-white transition-colors">Twitter</a>
+                    <a href="#" class="font-inter text-gray-600 text-sm hover:text-white transition-colors">YouTube</a>
+                    <a href="#" class="font-inter text-gray-600 text-sm hover:text-white transition-colors">TikTok</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+
+        // Loading Screen
+        const loader = document.getElementById('loader');
+        const loaderProgress = document.getElementById('loader-progress');
+        let progress = 0;
+
+        const loadInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }, 500);
+            }
+            loaderProgress.style.width = progress + '%';
+        }, 100);
+
+        // Custom Cursor
+        const cursor = document.getElementById('cursor');
+        let cursorX = 0, cursorY = 0;
+        let currentX = 0, currentY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            cursorX = e.clientX;
+            cursorY = e.clientY;
+        });
+
+        function animateCursor() {
+            currentX += (cursorX - currentX) * 0.1;
+            currentY += (cursorY - currentY) * 0.1;
+            cursor.style.left = currentX - 10 + 'px';
+            cursor.style.top = currentY - 10 + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Particle Background
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 75, 147, ${this.opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            // Draw connections
+            particles.forEach((p1, i) => {
+                particles.slice(i + 1).forEach(p2 => {
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 75, 147, ${0.1 * (1 - distance / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Typing Effect
+        const typingText = document.getElementById('typing-text');
+        const phrases = [
+            'UNLEASH THE BOLD',
+            'TASTE THE REVOLUTION',
+            'DRUNK BY NATURE',
+            'NO COMPROMISES'
+        ];
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+
+        function typeEffect() {
+            const currentPhrase = phrases[phraseIndex];
+
+            if (isDeleting) {
+                typingText.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingText.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentPhrase.length) {
+                typeSpeed = 2000;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(typeEffect, typeSpeed);
+        }
+        setTimeout(typeEffect, 1500);
+
+        // Scroll Reveal Animation
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Stagger Children Animation
+        const staggerContainers = document.querySelectorAll('.stagger-children');
+        const staggerObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        staggerContainers.forEach(el => staggerObserver.observe(el));
+
+        // Count Up Animation
+        const countElements = document.querySelectorAll('.count-up');
+        const countObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = parseInt(entry.target.dataset.target);
+                    const duration = 2000;
+                    const start = performance.now();
+
+                    function updateCount(currentTime) {
+                        const elapsed = currentTime - start;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        entry.target.textContent = Math.floor(easeOut * target);
+
+                        if (progress < 1) {
+                            requestAnimationFrame(updateCount);
+                        }
+                    }
+
+                    requestAnimationFrame(updateCount);
+                    countObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        countElements.forEach(el => countObserver.observe(el));
+
+        // Navbar Scroll Effect
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+
+            if (currentScroll > 100) {
+                navbar.style.background = 'rgba(0, 0, 0, 0.9)';
+                navbar.style.backdropFilter = 'blur(20px)';
+            } else {
+                navbar.style.background = 'transparent';
+                navbar.style.backdropFilter = 'none';
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // Mobile Menu
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuClose = document.getElementById('menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.style.transform = 'translateX(0)';
+        });
+
+        menuClose.addEventListener('click', () => {
+            mobileMenu.style.transform = 'translateX(100%)';
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.style.transform = 'translateX(100%)';
+            });
+        });
+
+        // Testimonial Carousel
+        const testimonialTrack = document.getElementById('testimonial-track');
+        const prevBtn = document.getElementById('prev-testimonial');
+        const nextBtn = document.getElementById('next-testimonial');
+        let currentSlide = 0;
+        const totalSlides = 3;
+
+        function updateCarousel() {
+            testimonialTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+        });
+
+        // Auto-advance testimonials
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+        }, 5000);
+
+        // Tilt Effect for Cards
+        document.querySelectorAll('.tilt-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 10;
+                const rotateY = (centerX - x) / 10;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            });
+        });
+
+        // Magnetic Button Effect
+        document.querySelectorAll('.magnetic-btn').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+
+                btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0, 0)';
+            });
+        });
+
+        // Spotlight Effect
+        document.querySelectorAll('.spotlight').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--x', x + 'px');
+                card.style.setProperty('--y', y + 'px');
+                card.querySelector('::before')?.style.setProperty('left', x + 'px');
+                card.querySelector('::before')?.style.setProperty('top', y + 'px');
+            });
+        });
+
+        // Smooth Scroll for Anchor Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Contact Form Handler
+        document.getElementById('contact-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 right-8 glass rounded-xl px-6 py-4 z-50 transform translate-y-20 opacity-0 transition-all duration-500';
+            toast.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-drunk-red"></i>
+                    <span class="font-inter text-white">Message sent successfully!</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(0)';
+                toast.style.opacity = '1';
+            }, 100);
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(20px)';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+
+            e.target.reset();
+        });
+
+        // Parallax Effect on Hero
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.getElementById('hero');
+            if (hero) {
+                hero.style.backgroundPositionY = scrolled * 0.5 + 'px';
+            }
+        });
+
+        // Add to Cart Animation
+        document.querySelectorAll('.liquid-fill').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (this.textContent.includes('Add to Cart')) {
+                    const originalText = this.textContent;
+                    this.textContent = 'Added!';
+                    this.style.borderColor = '#22c55e';
+                    this.style.color = '#22c55e';
+
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.borderColor = '';
+                        this.style.color = '';
+                    }, 1500);
+                }
+            });
+        });
+
+        // Horizontal Scroll Drag
+        const flavorScroll = document.getElementById('flavor-scroll');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        flavorScroll.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - flavorScroll.offsetLeft;
+            scrollLeft = flavorScroll.scrollLeft;
+        });
+
+        flavorScroll.addEventListener('mouseleave', () => {
+            isDown = false;
+        });
+
+        flavorScroll.addEventListener('mouseup', () => {
+            isDown = false;
+        });
+
+        flavorScroll.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - flavorScroll.offsetLeft;
+            const walk = (x - startX) * 2;
+            flavorScroll.scrollLeft = scrollLeft - walk;
+        });
+
+        // Glitch Effect Trigger
+        const glitchElement = document.querySelector('.glitch');
+        if (glitchElement) {
+            setInterval(() => {
+                glitchElement.style.animation = 'none';
+                setTimeout(() => {
+                    glitchElement.style.animation = '';
+                }, 100);
+            }, 5000);
+        }
+
+        // Performance: Pause animations when tab is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Pause expensive animations
+            } else {
+                // Resume animations
+            }
+        });
+
+        // Console Easter Egg
+        console.log('%c DRUNK ', 'background: #C9002B; color: white; font-size: 30px; font-weight: bold; padding: 10px;');
+        console.log('%c Unleash The Bold ', 'color: #004B93; font-size: 16px;');
+    
+        // Flavor Bars Animation
+        const flavorBars = document.querySelectorAll('#flavor-bars .h-full');
+        const flavorObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bars = entry.target.querySelectorAll('[data-width]');
+                    bars.forEach(bar => {
+                        setTimeout(() => {
+                            bar.style.width = bar.dataset.width;
+                        }, 200);
+                    });
+                    flavorObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        const flavorContainer = document.getElementById('flavor-bars');
+        if (flavorContainer) flavorObserver.observe(flavorContainer);
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const item = this.closest('.faq-item');
+                const content = item.querySelector('.faq-content');
+                const icon = item.querySelector('.faq-icon');
+                const isOpen = !content.classList.contains('hidden');
+
+                // Close all others
+                document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+                document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+
+                if (!isOpen) {
+                    content.classList.remove('hidden');
+                    icon.style.transform = 'rotate(45deg)';
+
+                    // Animate content height
+                    content.style.opacity = '0';
+                    content.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        content.style.transition = 'all 0.3s ease';
+                        content.style.opacity = '1';
+                        content.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            });
+        });
+
+        // Parallax Scroll Effect for sections
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.parallax');
+            parallaxElements.forEach(el => {
+                const speed = el.dataset.speed || 0.5;
+                el.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Scroll-triggered Navbar background
+        const nav = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-drunk-black/90', 'backdrop-blur-xl');
+            } else {
+                nav.classList.remove('bg-drunk-black/90', 'backdrop-blur-xl');
+            }
+        });
+
+        // Magnetic effect for all buttons
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                this.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`;
+            });
+            el.addEventListener('mouseleave', function() {
+                this.style.transform = 'translate(0, 0)';
+            });
+        });
+
+        // Image lazy loading with fade-in
+        const lazyImages = document.querySelectorAll('img');
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.style.opacity = '0';
+                    img.style.transition = 'opacity 0.6s ease';
+                    img.onload = () => { img.style.opacity = '1'; };
+                    if (img.complete) img.style.opacity = '1';
+                    imageObserver.unobserve(img);
+                }
+            });
+        });
+        lazyImages.forEach(img => imageObserver.observe(img));
+
+        // Horizontal scroll with mouse wheel for flavors
+        const flavorScrollEl = document.getElementById('flavor-scroll');
+        if (flavorScrollEl) {
+            flavorScrollEl.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    flavorScrollEl.scrollLeft += e.deltaY;
+                }
+            });
+        }
+
+        // 3D Card tilt effect for product cards
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 20;
+                const rotateY = (centerX - x) / 20;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-15px) scale(1.02)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0) scale(1)';
+            });
+        });
+
+        // Text scramble effect for headings on scroll
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\/[]{}&mdash;=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="text-drunk-red">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        // Apply scramble effect to main headings when they come into view
+        document.querySelectorAll('h2.font-bebas').forEach(heading => {
+            const originalText = heading.innerText;
+            const scrambleObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const fx = new TextScramble(heading);
+                        fx.setText(originalText);
+                        scrambleObserver.unobserve(heading);
+                    }
+                });
+            }, { threshold: 0.5 });
+            scrambleObserver.observe(heading);
+        });
+
+        // Smooth scroll for all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Form submission with loading state
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                const originalText = btn.innerText;
+                btn.innerText = 'Sending...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    btn.innerText = 'Sent!';
+                    btn.style.background = '#22c55e';
+                    btn.style.borderColor = '#22c55e';
+
+                    // Show toast
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed bottom-8 right-8 glass rounded-xl px-6 py-4 z-50 transform translate-y-20 opacity-0 transition-all duration-500';
+                    toast.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-drunk-red"></i>
+                            <span class="font-inter text-white">Message sent successfully!</span>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    lucide.createIcons();
+
+                    setTimeout(() => {
+                        toast.style.transform = 'translateY(0)';
+                        toast.style.opacity = '1';
+                    }, 100);
+
+                    setTimeout(() => {
+                        toast.style.transform = 'translateY(20px)';
+                        toast.style.opacity = '0';
+                        setTimeout(() => toast.remove(), 500);
+                    }, 3000);
+
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        btn.style.background = '';
+                        btn.style.borderColor = '';
+                        this.reset();
+                    }, 2000);
+                }, 1500);
+            });
+        });
+
+        // Add ripple effect to buttons
+        document.querySelectorAll('button, .liquid-fill').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255,255,255,0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Add ripple keyframe dynamically
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
+        // Preloader enhancement
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1000);
+        });
+
+        // Countdown Timer
+        function updateCountdown() {
+            const now = new Date();
+            const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+            const diff = endOfDay - now;
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const hEl = document.getElementById('hours');
+            const mEl = document.getElementById('minutes');
+            const sEl = document.getElementById('seconds');
+
+            if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+            if (mEl) mEl.textContent = String(minutes).padStart(2, '0');
+            if (sEl) sEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // Show countdown banner after 3 seconds
+        setTimeout(() => {
+            const banner = document.getElementById('countdown-banner');
+            if (banner) banner.style.transform = 'translateY(0)';
+        }, 3000);
+
+        // Close banner
+        document.getElementById('close-banner')?.addEventListener('click', () => {
+            const banner = document.getElementById('countdown-banner');
+            if (banner) banner.style.transform = 'translateY(100%)';
+        });
+
+        // Social Proof Popup
+        const names = ['Alex M.', 'Sarah K.', 'Mike R.', 'Jessica T.', 'David L.', 'Emma W.', 'Chris B.', 'Lisa H.'];
+        const products = ['MAX ENERGY', 'CHERRY BOMB', 'ORIGINAL', 'TROPICAL STORM', 'ZERO SUGAR'];
+        const times = ['just now', '1 minute ago', '2 minutes ago', '3 minutes ago', '5 minutes ago'];
+
+        function showSocialProof() {
+            const popup = document.getElementById('social-proof');
+            const nameEl = document.getElementById('sp-name');
+            const timeEl = document.getElementById('sp-time');
+
+            if (!popup || !nameEl || !timeEl) return;
+
+            nameEl.textContent = names[Math.floor(Math.random() * names.length)];
+            const product = products[Math.floor(Math.random() * products.length)];
+            timeEl.textContent = times[Math.floor(Math.random() * times.length)];
+
+            // Update the product name in the text
+            const textEl = popup.querySelector('p.font-inter');
+            if (textEl) {
+                textEl.innerHTML = `<span id="sp-name">${nameEl.textContent}</span> just bought <span class="text-drunk-red font-semibold">${product}</span>`;
+            }
+
+            popup.style.opacity = '1';
+            popup.style.transform = 'translateX(0)';
+
+            setTimeout(() => {
+                popup.style.opacity = '0';
+                popup.style.transform = 'translateX(-100%)';
+            }, 4000);
+        }
+
+        // Show social proof every 15-25 seconds
+        function scheduleSocialProof() {
+            const delay = 15000 + Math.random() * 10000;
+            setTimeout(() => {
+                showSocialProof();
+                scheduleSocialProof();
+            }, delay);
+        }
+        setTimeout(scheduleSocialProof, 5000);
+
+        // Back to Top Button
+        const backToTop = document.getElementById('back-to-top');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                backToTop.style.opacity = '1';
+                backToTop.style.pointerEvents = 'auto';
+            } else {
+                backToTop.style.opacity = '0';
+                backToTop.style.pointerEvents = 'none';
+            }
+        });
+
+        backToTop?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Re-initialize Lucide icons after dynamic content
+        setTimeout(() => {
+            lucide.createIcons();
+        }, 100);
+</script>
+
+    <!-- Limited Edition Countdown Banner -->
+    <div id="countdown-banner" class="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-drunk-red to-drunk-blue transform translate-y-full transition-transform duration-500">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <span class="font-bebas text-xl text-white">LIMITED EDITION DROP</span>
+                <span class="font-inter text-sm text-white/80">Cherry Bomb x Travis Scott &mdash; Only 10,000 cans</span>
+            </div>
+            <div class="flex items-center space-x-4 mt-2 md:mt-0">
+                <div class="flex space-x-2" id="countdown-timer">
+                    <div class="text-center">
+                        <span class="font-bebas text-2xl text-white" id="hours">00</span>
+                        <span class="font-inter text-xs text-white/60 block">HRS</span>
+                    </div>
+                    <span class="font-bebas text-2xl text-white">:</span>
+                    <div class="text-center">
+                        <span class="font-bebas text-2xl text-white" id="minutes">00</span>
+                        <span class="font-inter text-xs text-white/60 block">MIN</span>
+                    </div>
+                    <span class="font-bebas text-2xl text-white">:</span>
+                    <div class="text-center">
+                        <span class="font-bebas text-2xl text-white" id="seconds">00</span>
+                        <span class="font-inter text-xs text-white/60 block">SEC</span>
+                    </div>
+                </div>
+                <button class="bg-white text-drunk-red font-inter font-semibold text-sm px-4 py-2 rounded-lg hover:bg-drunk-black hover:text-white transition-colors">
+                    Shop Now
+                </button>
+                <button id="close-banner" class="text-white/60 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Proof Popup -->
+    <div id="social-proof" class="fixed bottom-24 left-6 z-40 transform -translate-x-full transition-transform duration-500 opacity-0">
+        <div class="glass rounded-xl p-4 max-w-xs">
+            <div class="flex items-start space-x-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-drunk-blue to-drunk-red flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <p class="font-inter text-sm text-white"><span id="sp-name">Alex M.</span> just bought <span class="text-drunk-red font-semibold">MAX ENERGY</span></p>
+                    <p class="font-inter text-xs text-gray-500 mt-1" id="sp-time">2 minutes ago</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 z-40 w-12 h-12 rounded-full glass flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:bg-drunk-red hover:border-drunk-red">
+        <i data-lucide="arrow-up" class="w-5 h-5"></i>
+    </button>
+</body>
+</html>
